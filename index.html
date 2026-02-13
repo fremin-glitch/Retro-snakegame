@@ -3,278 +3,241 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Retro Snake Xenzia - Official Emulator</title>
+    <title>Retro Snake - Official Emulator</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     
-    <!-- [ADS] POPUNDER & SOCIAL BAR -->
-    <script src="https://pl28707903.effectivegatecpm.com/f2/dd/5b/f2dd5bb76f95f63fc86650ad6a817044.js"></script>
-    <script src="https://pl28707969.effectivegatecpm.com/39/d4/bb/39d4bb3e43d25b8cc2141bfe3b9779c9.js"></script>
-
+    <!-- Ads are restricted to banners only to prevent forced redirects -->
     <style>
         :root {
-            --nokia-blue: #2c5a8d;
-            --screen-yellow: #98b000;
-            --lcd-glow: rgba(152, 176, 0, 0.7);
+            --nokia-green: #98b000;
+            --nokia-silver: #c0c0c0;
+            --lcd-glow: rgba(152, 176, 0, 0.5);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
 
         body {
-            margin: 0; padding: 0; background-color: #050505; color: white;
+            margin: 0; padding: 0; background-color: #0a0a0a; color: white;
             font-family: 'VT323', monospace; display: flex; flex-direction: column;
             align-items: center; justify-content: center; min-height: 100vh;
             overflow: hidden; transition: background 0.5s;
         }
 
-        /* --- AD SLOTS --- */
-        .ad-container { width: 100%; max-width: 340px; margin: 5px 0; text-align: center; min-height: 50px; transition: opacity 0.5s; }
-        .hide-ads .ad-container, .hide-ads #smart-link-ext { opacity: 0 !important; pointer-events: none !important; }
+        /* --- AD CONTAINERS --- */
+        .ad-slot { width: 100%; max-width: 340px; margin: 5px 0; text-align: center; min-height: 50px; transition: opacity 0.5s; }
+        .hide-ads .ad-slot, .hide-ads #curiosity-link { opacity: 0 !important; pointer-events: none !important; height: 0 !important; }
 
-        /* --- GLOWING LCD SCOREBOARD --- */
+        /* --- LCD SCOREBOARD --- */
         #scoreboard {
             width: 340px; background: #000;
-            border: 4px solid var(--screen-yellow); border-radius: 12px;
+            border: 3px solid var(--nokia-green); border-radius: 12px;
             display: flex; justify-content: space-between; align-items: center;
-            padding: 15px; margin-bottom: 15px;
-            box-shadow: 0 0 25px var(--lcd-glow), inset 0 0 10px var(--lcd-glow);
+            padding: 12px 18px; margin-bottom: 15px;
+            box-shadow: 0 0 25px var(--lcd-glow);
         }
-        .score-box { display: flex; flex-direction: column; }
-        .score-lbl { font-size: 14px; color: var(--screen-yellow); text-transform: uppercase; font-weight: bold; }
-        .score-num { font-size: 50px; color: #fff; text-shadow: 0 0 15px var(--lcd-glow); line-height: 1; }
-        .target-num { font-size: 22px; opacity: 0.8; color: var(--screen-yellow); }
+        .score-val { font-size: 40px; color: #fff; text-shadow: 0 0 15px var(--lcd-glow); line-height: 1; }
+        .target-val { font-size: 18px; opacity: 0.6; color: var(--nokia-green); }
 
-        /* --- REAL BLUE NOKIA FRAME --- */
+        /* --- NOKIA FRAME --- */
         #phone {
-            position: relative; width: 340px; background: #3b5998; /* Blue body */
-            border-radius: 50px; padding: 25px 20px; 
-            border: 8px solid #222;
-            box-shadow: 0 40px 100px rgba(0,0,0,1); transition: all 0.2s;
-            display: flex; flex-direction: column; align-items: center;
+            position: relative; width: 340px; background: var(--nokia-silver);
+            border-radius: 45px; padding: 25px; border: 10px solid #888;
+            box-shadow: 0 30px 80px rgba(0,0,0,1); transition: all 0.2s;
         }
-        #phone.hell-vibrate { animation: phone-shake 0.1s infinite; background: #1a0000; border-color: #f00; }
-
-        #phone-logo { 
-            font-size: 24px; font-weight: 900; color: #000; 
-            margin-bottom: 15px; font-family: 'Arial Black', sans-serif; 
-            letter-spacing: -1.5px; opacity: 0.8;
-        }
+        #phone.shake { animation: phone-vibrate 0.1s infinite; border-color: #a00; background: #1a0000; }
+        #brand { text-align: center; font-size: 24px; font-weight: 900; color: #222; margin-bottom: 15px; font-style: italic; letter-spacing: -1px; }
 
         /* --- SCREEN --- */
-        #screen-area {
-            position: relative; width: 100%; aspect-ratio: 4 / 3.2;
-            background-color: var(--screen-yellow); border: 8px solid #444;
-            border-radius: 5px; overflow: hidden; display: flex; flex-direction: column;
+        #screen {
+            position: relative; width: 100%; aspect-ratio: 4 / 3;
+            background-color: var(--nokia-green); border: 8px solid #333;
+            border-radius: 4px; overflow: hidden; display: flex; flex-direction: column;
         }
-        #screen-area.hell-fx { filter: invert(1) contrast(10) brightness(0.2); animation: glitch-anim 0.1s infinite; background: #ff0000; }
+        #screen.hell { filter: invert(1) contrast(6) brightness(0.2); animation: screen-glitch 0.1s infinite; background: #f00; }
 
-        #grid { flex: 1; display: grid; grid-template-columns: repeat(20, 1fr); grid-template-rows: repeat(20, 1fr); position: relative; }
-        .snake { background: #000; border: 0.1px solid var(--screen-yellow); }
-        .food { background: #000; border-radius: 50%; animation: pulse 0.6s infinite; }
-        .hell-snake-part { background: #fff; box-shadow: 0 0 25px #fff; }
+        #game-grid { flex: 1; display: grid; grid-template-columns: repeat(20, 1fr); grid-template-rows: repeat(20, 1fr); }
+        .snake-bit { background: #000; border: 0.1px solid var(--nokia-green); }
+        .food-bit { background: #000; border-radius: 50%; animation: food-pulse 0.6s infinite; }
+        .hell-snake { background: #fff; box-shadow: 0 0 20px #fff; }
 
-        /* --- EMERGENCY STOP BUTTON (ULTRA HIGHLIGHTED) --- */
-        #emergency-stop {
-            display: none; position: absolute; top: 50%; left: 50%; 
-            transform: translate(-50%, -50%); 
-            background: #ffffff; color: #ff0000; 
-            border: 10px solid #ff0000; padding: 25px 35px; 
-            font-family: 'VT323', monospace; font-size: 38px; 
-            font-weight: 900; cursor: pointer; z-index: 1000;
-            box-shadow: 0 0 100px #ffffff, 0 0 50px #ff0000;
-            animation: alert-flash 0.3s infinite alternate;
-            text-transform: uppercase; white-space: nowrap;
+        /* --- MASSIVE EMERGENCY STOP --- */
+        #stop-btn {
+            display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #fff; color: #f00; border: 8px solid #f00;
+            padding: 20px 30px; font-family: 'VT323', monospace; font-size: 32px;
+            font-weight: 900; cursor: pointer; z-index: 999;
+            box-shadow: 0 0 60px #fff, 0 0 30px #f00;
+            animation: stop-flash 0.3s infinite alternate; text-transform: uppercase;
         }
 
-        /* --- OVERLAYS --- */
-        .overlay { position: absolute; inset: 0; background: var(--screen-yellow); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #000; text-align: center; padding: 20px; }
-        .btn-action { background: #000; color: var(--screen-yellow); border: none; padding: 15px 40px; font-family: 'VT323', monospace; font-size: 34px; cursor: pointer; margin-bottom: 10px; box-shadow: 0 5px 0 #333; animation: pulse-btn 1s infinite; }
+        /* --- UI OVERLAYS --- */
+        .overlay { position: absolute; inset: 0; background: var(--nokia-green); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #000; text-align: center; padding: 15px; }
+        .btn-big { background: #000; color: var(--nokia-green); border: none; padding: 12px 35px; font-family: 'VT323', monospace; font-size: 30px; cursor: pointer; margin-bottom: 10px; }
 
         /* --- KEYPAD --- */
-        #keypad { margin-top: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; }
-        .key { background: #e0e0e0; height: 55px; border-radius: 15px; color: #333; display: flex; justify-content: center; align-items: center; font-size: 22px; border-bottom: 5px solid #aaa; cursor: pointer; font-weight: bold; }
-        .key:active { transform: translateY(3px); border-bottom: 2px solid #aaa; }
+        #keypad { margin-top: 15px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .key { background: #333; height: 50px; border-radius: 12px; color: white; display: flex; justify-content: center; align-items: center; font-size: 18px; border-bottom: 4px solid #111; cursor: pointer; }
 
         /* --- ANIMATIONS --- */
-        @keyframes alert-flash { 
-            0% { transform: translate(-50%, -50%) scale(1); background: #fff; color: #f00; } 
-            100% { transform: translate(-50%, -50%) scale(1.2); background: #f00; color: #fff; } 
-        }
-        @keyframes phone-shake { 0% { transform: translate(5px, 5px); } 50% { transform: translate(-5px, -5px); } }
-        @keyframes glitch-anim { 0% { transform: skewX(15deg); opacity: 0.7; } 50% { transform: skewX(-15deg); opacity: 1; } }
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.5); } }
-        @keyframes pulse-btn { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        @keyframes stop-flash { 0% { transform: translate(-50%, -50%) scale(1); background: #fff; } 100% { transform: translate(-50%, -50%) scale(1.1); background: #f00; color: #fff; } }
+        @keyframes phone-vibrate { 0% { transform: translate(3px, 3px); } 50% { transform: translate(-3px, -3px); } }
+        @keyframes screen-glitch { 0% { transform: skewX(5deg); opacity: 0.8; } 50% { transform: skewX(-5deg); opacity: 1; } }
+        @keyframes food-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.4); } }
 
-        #smart-link-ext {
-            margin-top: 25px; text-decoration: none; color: #ffcc00; font-size: 20px;
+        #curiosity-link {
+            margin-top: 20px; text-decoration: none; color: #ffcc00; font-size: 16px;
             font-weight: bold; animation: pulse-btn 1s infinite;
-            display: none; cursor: pointer; text-shadow: 0 0 15px #000;
+            display: none; cursor: pointer; text-shadow: 0 0 8px #000;
         }
-
-        #nightmare-dimmer { display: none; position: fixed; inset: 0; z-index: 998; pointer-events: none; background: rgba(255,0,0,0.4); animation: glitch-anim 0.1s infinite; }
+        @keyframes pulse-btn { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
     </style>
 </head>
-<body id="prank-body">
+<body id="main-body">
 
-    <!-- [ADS] TOP BANNER -->
-    <div class="ad-container">
+    <!-- TOP BANNER -->
+    <div class="ad-slot">
         <script>
             atOptions = { 'key' : '4ae13dfbcfff4f8fa3767c34f79bfaf5', 'format' : 'iframe', 'height' : 50, 'width' : 320, 'params' : {} };
         </script>
         <script src="https://www.highperformanceformat.com/4ae13dfbcfff4f8fa3767c34f79bfaf5/invoke.js"></script>
     </div>
 
-    <!-- GLOWING SCOREBOARD -->
+    <!-- LCD SCOREBOARD -->
     <div id="scoreboard">
         <div class="score-box">
-            <span class="score-lbl">Score / Goal</span>
-            <div><span id="s-cur" class="score-num">000</span><span id="s-goal" class="target-num">/ 003</span></div>
+            <span style="font-size: 10px; color: var(--nokia-green);">Score / Goal</span>
+            <div><span id="score-val" class="score-val">000</span><span id="target-val" class="target-val">/ 003</span></div>
         </div>
         <div class="score-box" style="text-align: right;">
-            <span class="score-lbl">HI-SCORE</span>
-            <span id="s-hi" class="score-num" style="font-size: 32px;">000</span>
+            <span style="font-size: 10px; color: var(--nokia-green);">HI-SCORE</span>
+            <span id="hi-val" class="score-val" style="font-size: 28px;">000</span>
         </div>
     </div>
 
     <div id="phone">
-        <div id="phone-logo">SNACK XENZIA</div>
-        
-        <div id="screen-area">
-            <div id="grid"></div>
+        <div id="brand">RETRO SNAKE</div>
+        <div id="screen">
+            <div id="game-grid"></div>
 
-            <!-- STOP BUTTON (Centered & Hidden) -->
-            <button id="emergency-stop" onclick="killPrank()">EMERGENCY STOP</button>
+            <!-- EMERGENCY STOP -->
+            <button id="stop-btn" onclick="killPrank()">STOP SYSTEM</button>
 
-            <!-- Menu UI -->
-            <div id="ui-start" class="overlay">
-                <button class="btn-action" onclick="loadStage(1)">START GAME</button>
-                <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">Link Status: Secure</div>
-                <div style="width: 100%; height: 50px; margin-top: 15px; overflow: hidden;">
+            <!-- Menus -->
+            <div id="ui-menu" class="overlay">
+                <button class="btn-big" onclick="startLevel(1)">START GAME</button>
+                <div style="font-size: 10px; opacity: 0.7;">Link Status: Stable</div>
+                <!-- Native Ad (Menu) -->
+                <div style="width: 100%; height: 50px; overflow: hidden; margin-top: 10px;">
                     <script async="async" data-cfasync="false" src="https://pl2870917.effectivegatecpm.com/f2612ef66e31d3fa19084a1d8c3ed587/invoke.js"></script>
                     <div id="container-f2612ef66e31d3fa19084a1d8c3ed587"></div>
                 </div>
             </div>
 
-            <!-- Level Win UI -->
             <div id="ui-win" class="overlay" style="display: none;">
-                <h2 style="margin: 0; font-size: 28px;">STAGE CLEAR!</h2>
+                <h2 style="margin: 0; font-size: 24px;">STAGE CLEAR!</h2>
                 <div onclick="window.open('https://www.effectivegatecpm.com/x8j5ppcu?key=c8d3de581f2f308306de3b971e6d826c')" 
-                     style="background: rgba(0,0,0,0.1); padding: 12px; font-size: 14px; cursor: pointer; border: 2px dashed #000; margin: 15px 0; font-weight: bold;">
+                     style="background: rgba(0,0,0,0.1); padding: 8px; font-size: 11px; cursor: pointer; border: 1px dashed black; font-weight: bold; margin: 10px 0;">
                     🎁 CLICK FOR GOLD SKIN 🎁
                 </div>
-                <button class="btn-action" id="next-lvl-trigger">NEXT LEVEL</button>
+                <button class="btn-big" id="next-lvl-btn" style="font-size: 22px;">NEXT LEVEL</button>
             </div>
 
-            <!-- Death UI -->
             <div id="ui-dead" class="overlay" style="display: none;">
-                <h2 style="margin: 0; color: #800; font-size: 30px;">SYSTEM ERROR</h2>
-                <div style="margin: 10px 0;">
-                    <script>
-                        atOptions = { 'key' : 'b7b3ab8a4d7e29f05cf8d0617619ce81', 'format' : 'iframe', 'height' : 250, 'width' : 300, 'params' : {} };
-                    </script>
-                    <script src="https://www.highperformanceformat.com/b7b3ab8a4d7e29f05cf8d0617619ce81/invoke.js"></script>
-                </div>
-                <button class="btn-action" onclick="location.reload()" style="font-size: 22px;">REBOOT</button>
+                <h2 style="margin: 0; color: #800; font-size: 26px;">SYSTEM ERROR</h2>
+                <button class="btn-big" onclick="location.reload()" style="font-size: 20px; margin-top: 15px;">REBOOT</button>
             </div>
         </div>
 
         <div id="keypad">
-            <div class="key">1</div><div class="key" onclick="setNxtDir(0,-1)">2 ▲</div><div class="key">3</div>
-            <div class="key" onclick="setNxtDir(-1,0)">4 ◀</div><div class="key">5</div><div class="key" onclick="setNxtDir(1,0)">6 ▶</div>
-            <div class="key">7</div><div class="key" onclick="setNxtDir(0,1)">8 ▼</div><div class="key">9</div>
+            <div class="key">1</div><div class="key" onclick="setDir(0, -1)">2 ▲</div><div class="key">3</div>
+            <div class="key" onclick="setDir(-1, 0)">4 ◀</div><div class="key">5</div><div class="key" onclick="setDir(1, 0)">6 ▶</div>
+            <div class="key">7</div><div class="key" onclick="setDir(0, 1)">8 ▼</div><div class="key">9</div>
         </div>
     </div>
 
-    <!-- External Smartlink Link -->
-    <a id="smart-link-ext" onclick="window.open('https://www.effectivegatecpm.com/x8j5ppcu?key=c8d3de581f2f308306de3b971e6d826c')">
-        🔥 UNLOCK ALL HACK MODS & STAGES 🔥
+    <!-- Curiosity Link (Smartlink) -->
+    <a id="curiosity-link" onclick="window.open('https://www.effectivegatecpm.com/x8j5ppcu?key=c8d3de581f2f308306de3b971e6d826c')">
+        🔥 UNLOCK ALL STAGES & NO ADS 🔥
     </a>
 
-    <!-- [ADS] BOTTOM BANNER -->
-    <div class="ad-container">
+    <!-- BOTTOM BANNER -->
+    <div class="ad-slot">
         <script>
             atOptions = { 'key' : '4ae13dfbcfff4f8fa3767c34f79bfaf5', 'format' : 'iframe', 'height' : 50, 'width' : 320, 'params' : {} };
         </script>
         <script src="https://www.highperformanceformat.com/4ae13dfbcfff4f8fa3767c34f79bfaf5/invoke.js"></script>
     </div>
 
-    <div id="nightmare-dimmer"></div>
-
-    <!-- AUDIO -->
     <audio id="snd-calm" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3"></audio>
     <audio id="snd-hell" loop src="creepy.mp3"></audio>
 
     <script>
-        const grid = document.getElementById('grid');
-        const sCur = document.getElementById('s-cur');
-        const sGoal = document.getElementById('s-goal');
-        const sHi = document.getElementById('s-hi');
-        const smartLink = document.getElementById('smart-link-ext');
-        const audCalm = document.getElementById('snd-calm');
-        const audHell = document.getElementById('snd-hell');
-        const stopBtn = document.getElementById('emergency-stop');
+        const grid = document.getElementById('game-grid');
+        const scoreTxt = document.getElementById('score-val');
+        const targetTxt = document.getElementById('target-val');
+        const hiScoreTxt = document.getElementById('hi-val');
+        const curLink = document.getElementById('curiosity-link');
+        const sndCalm = document.getElementById('snd-calm');
+        const sndHell = document.getElementById('snd-hell');
+        const stopBtn = document.getElementById('stop-btn');
 
         const SIZE = 20;
         let snake = [{x: 10, y: 10}], food = {x: 5, y: 5}, dir = {x: 1, y: 0}, nxtDir = {x: 1, y: 0}, loop, stage = 1, hiScore = 0, isHell = false;
-        const targets = { 1: 3, 2: 5, 3: 666 };
+        const goals = { 1: 3, 2: 5, 3: 666 };
 
-        function loadStage(s) {
+        function startLevel(s) {
             document.querySelectorAll('.overlay').forEach(o => o.style.display = 'none');
             stage = s; isHell = (s === 3);
             snake = [{x: 10, y: 10}]; dir = {x: 1, y: 0}; nxtDir = {x: 1, y: 0};
-            sGoal.innerText = isHell ? "/ ???" : "/ " + targets[s].toString().padStart(3, '0');
-            smartLink.style.display = isHell ? 'none' : 'block';
+            targetTxt.innerText = isHell ? "/ ???" : "/ " + goals[s].toString().padStart(3, '0');
+            curLink.style.display = isHell ? 'none' : 'block';
             updateUI(); spawnFood();
 
             if (isHell) {
-                audCalm.pause();
-                audHell.currentTime = 0;
-                audHell.play().catch(e => console.log("Upload creepy.mp3 to GitHub folder."));
-                audHell.volume = 1.0;
-                
-                document.getElementById('prank-body').classList.add('hide-ads');
-                document.getElementById('screen-area').classList.add('hell-fx');
-                document.getElementById('phone').classList.add('hell-vibrate');
-                document.getElementById('nightmare-dimmer').style.display = 'block';
-
+                sndCalm.pause();
+                sndHell.currentTime = 0;
+                sndHell.play().catch(e => console.log("Missing creepy.mp3"));
+                document.getElementById('main-body').classList.add('hide-ads');
+                document.getElementById('screen').classList.add('hell');
+                document.getElementById('phone').classList.add('shake');
                 setTimeout(() => { stopBtn.style.display = 'block'; }, 3000);
             } else {
-                audCalm.play().catch(()=>{});
-                audCalm.volume = 0.4;
+                sndCalm.play().catch(()=>{});
             }
 
             if(loop) clearInterval(loop);
-            loop = setInterval(gameStep, isHell ? 65 : (160 - (s * 35)));
+            loop = setInterval(tick, isHell ? 65 : (160 - (s * 35)));
         }
 
         function killPrank() {
-            audHell.pause();
+            sndHell.pause();
             window.location.href = "https://www.effectivegatecpm.com/x8j5ppcu?key=c8d3de581f2f308306de3b971e6d826c";
         }
 
-        function gameStep() {
+        function tick() {
             dir = nxtDir;
             const head = { x: (snake[0].x + dir.x + SIZE) % SIZE, y: (snake[0].y + dir.y + SIZE) % SIZE };
-            if (snake.some(p => p.x === head.x && p.y === head.y)) return gameOver();
+            if (snake.some(p => p.x === head.x && p.y === head.y)) return die();
             snake.unshift(head);
             if (head.x === food.x && head.y === food.y) {
                 updateUI();
-                if (snake.length - 1 >= targets[stage]) winStage();
+                if (snake.length - 1 >= goals[stage]) win();
                 spawnFood();
             } else snake.pop();
             render();
         }
 
-        function winStage() {
+        function win() {
             clearInterval(loop);
             document.getElementById('ui-win').style.display = 'flex';
-            document.getElementById('next-lvl-trigger').onclick = () => loadStage(stage + 1);
+            document.getElementById('next-lvl-btn').onclick = () => startLevel(stage + 1);
         }
 
-        function gameOver() {
+        function die() {
             if(isHell) return;
             clearInterval(loop);
             document.getElementById('ui-dead').style.display = 'flex';
-            if (snake.length - 1 > hiScore) { hiScore = snake.length - 1; sHi.innerText = hiScore.toString().padStart(3, '0'); }
+            if (snake.length - 1 > hiScore) { hiScore = snake.length - 1; hiScoreTxt.innerText = hiScore.toString().padStart(3, '0'); }
         }
 
         function spawnFood() { food = { x: Math.floor(Math.random()*SIZE), y: Math.floor(Math.random()*SIZE) }; }
@@ -283,20 +246,20 @@
             grid.innerHTML = '';
             snake.forEach((p, i) => {
                 const div = document.createElement('div');
-                div.className = isHell ? 'hell-snake-part' : 'snake';
+                div.className = isHell ? 'hell-snake' : 'snake-bit';
                 div.style.gridColumnStart = p.x + 1; div.style.gridRowStart = p.y + 1;
                 if(isHell) div.style.opacity = 1 - (i*0.04);
                 grid.appendChild(div);
             });
             const f = document.createElement('div');
-            f.className = 'food'; if(isHell) f.style.background = '#f00';
+            f.className = 'food-bit'; if(isHell) f.style.background = '#f00';
             f.style.gridColumnStart = food.x + 1; f.style.gridRowStart = food.y + 1;
             grid.appendChild(f);
         }
 
-        function updateUI() { sCur.innerText = (snake.length - 1).toString().padStart(3, '0'); }
+        function updateUI() { scoreTxt.innerText = (snake.length - 1).toString().padStart(3, '0'); }
 
-        function setNxtDir(x, y) {
+        function setDir(x, y) {
             if(isHell && Math.random() > 0.85) return;
             if(x === -dir.x && x !== 0) return;
             if(y === -dir.y && y !== 0) return;
@@ -304,8 +267,8 @@
         }
 
         window.addEventListener('keydown', e => {
-            if(e.key === 'ArrowUp') setNxtDir(0, -1); if(e.key === 'ArrowDown') setNxtDir(0, 1);
-            if(e.key === 'ArrowLeft') setNxtDir(-1, 0); if(e.key === 'ArrowRight') setNxtDir(1, 0);
+            if(e.key === 'ArrowUp') setDir(0, -1); if(e.key === 'ArrowDown') setDir(0, 1);
+            if(e.key === 'ArrowLeft') setDir(-1, 0); if(e.key === 'ArrowRight') setDir(1, 0);
         });
     </script>
 </body>
