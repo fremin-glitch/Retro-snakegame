@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Retro Snake Xenzia - Official Neural Emulator</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --nokia-green: #98b000;
+            --nokia-silver: #c0c0c0;
+            --nokia-dark: #2c3e50;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: white;
+            font-family: 'VT323', monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            transition: background 0.7s;
+        }
+
+        /* --- AD PLACEHOLDERS --- */
+        .ad-container {
+            width: 100%;
+            max-width: 350px;
+            background: #1e1e1e;
+            border: 1px solid #333;
+            text-align: center;
+            font-size: 10px;
+            color: #555;
+            margin: 10px 0;
+            min-height: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: opacity 0.5s;
+        }
+        .ad-container.hide { opacity: 0; pointer-events: none; }
+
+        /* --- SCOREBOARD --- */
+        #scoreboard {
+            width: 90%;
+            max-width: 340px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 5px;
+            padding: 0 10px;
+        }
+        .score-box { display: flex; flex-direction: column; }
+        .score-label { font-size: 10px; opacity: 0.6; text-transform: uppercase; }
+        .score-val { font-size: 32px; letter-spacing: 2px; }
+
+        /* --- NOKIA BODY --- */
+        #phone {
+            position: relative;
+            width: 340px;
+            background: #d1d1d1;
+            border-radius: 40px;
+            padding: 25px;
+            border: 10px solid #a0a0a0;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            transition: all 0.3s;
+        }
+
+        #phone.scare {
+            animation: tremor 0.1s infinite;
+            border-color: #500;
+            background: #1a0000;
+        }
+
+        #nokia-brand {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 900;
+            color: #333;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        /* --- SCREEN --- */
+        #screen {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            background-color: var(--nokia-green);
+            border: 6px solid #555;
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #screen.hell {
+            filter: invert(1) contrast(5) brightness(0.4) grayscale(1);
+            background: #ff0000;
+            animation: glitch-screen 0.1s infinite;
+        }
+
+        #screen-header {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 5px;
+            font-size: 12px;
+            border-bottom: 1px solid rgba(0,0,0,0.2);
+            color: rgba(0,0,0,0.7);
+        }
+
+        #board {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(20, 1fr);
+            grid-template-rows: repeat(20, 1fr);
+            position: relative;
+        }
+
+        .snake { background: #000; border: 0.1px solid var(--nokia-green); }
+        .food { background: #000; border-radius: 50%; animation: pulse 0.5s infinite; }
+        .snake.hell-part { background: #fff; box-shadow: 0 0 10px #fff; }
+
+        /* --- OVERLAYS --- */
+        #menu, #levelup, #gameover {
+            position: absolute;
+            inset: 0;
+            background: var(--nokia-green);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 10px;
+            color: #000;
+        }
+
+        .big-btn {
+            background: #000;
+            color: var(--nokia-green);
+            border: none;
+            padding: 15px 30px;
+            font-family: 'VT323', monospace;
+            font-size: 24px;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 4px 0 #333;
+            animation: pulse-scale 1s infinite;
+        }
+        .big-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #333; }
+
+        /* --- KEYPAD --- */
+        #keypad {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        .key {
+            background: #333;
+            height: 55px;
+            border-radius: 12px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            cursor: pointer;
+            border-bottom: 5px solid #111;
+        }
+        .key:active { transform: translateY(2px); border-bottom: 2px solid #111; }
+        .key span { font-size: 8px; opacity: 0.5; text-transform: uppercase; }
+
+        /* --- ANIMATIONS --- */
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
+        @keyframes pulse-scale { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes tremor { 0% { transform: translate(2px, 2px); } 50% { transform: translate(-2px, -2px); } 100% { transform: translate(1px, -1px); } }
+        @keyframes glitch-screen { 0% { opacity: 0.8; } 50% { opacity: 1; transform: skew(1deg); } 100% { opacity: 0.9; } }
+        @keyframes blink-red { 0% { background: rgba(0,0,0,0.4); } 50% { background: rgba(150,0,0,0.3); } 100% { background: rgba(0,0,0,0.4); } }
+
+        /* Stage 3 Red Overlay */
+        #hell-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+            pointer-events: none;
+            animation: blink-red 0.1s infinite;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Top Ad Slot -->
+    <div id="ad-top" class="ad-container">
+        <span>ADVERTISEMENT</span>
+        <div style="color: #3498db; cursor: pointer;">CLAIM 10,000 FREE COINS - CLICK HERE!</div>
+    </div>
+
+    <div id="scoreboard">
+        <div class="score-box">
+            <span class="score-label">Score / Goal</span>
+            <span class="score-val"><span id="score">000</span> / <span id="target">003</span></span>
+        </div>
+        <div class="score-box" style="align-items: flex-end;">
+            <span class="score-label">HI-Score</span>
+            <span id="hi-score" class="score-val" style="font-size: 24px;">000</span>
+        </div>
+    </div>
+
+    <div id="phone">
+        <div id="nokia-brand">SNACK XENZIA</div>
+        <div id="screen">
+            <div id="screen-header">
+                <span id="stg-label">STAGE 1</span>
+                <span>RETRO_v4</span>
+            </div>
+
+            <div id="board"></div>
+
+            <!-- Menu Overlay -->
+            <div id="menu">
+                <button class="big-btn" onclick="startGame(1)">START GAME</button>
+                <div style="margin-top: 5px; font-size: 10px; opacity: 0.6;">New game</div>
+            </div>
+
+            <!-- Level Up Overlay -->
+            <div id="levelup" style="display: none;">
+                <h2 style="margin: 0;">LEVEL COMPLETE!</h2>
+                <div style="font-size: 10px; margin-bottom: 10px;">Archiving results... 100%</div>
+                <div style="font-size: 8px; background: rgba(0,0,0,0.1); padding: 5px; margin-bottom: 10px;">AD: Unlock Special Snake with this Free App!</div>
+                <button class="big-btn" id="next-btn" style="padding: 10px 20px; font-size: 18px;">NEXT LEVEL</button>
+            </div>
+
+            <!-- Game Over Overlay -->
+            <div id="gameover" style="display: none;">
+                <h2 style="margin: 0; color: #721c24;">SYSTEM ERROR</h2>
+                <div style="font-size: 10px; margin-top: 5px;">Buffer overflow detected.</div>
+                <button class="big-btn" onclick="location.reload()" style="padding: 10px 20px; font-size: 18px;">REBOOT</button>
+            </div>
+        </div>
+
+        <div id="keypad">
+            <div class="key">1<span>. ,</span></div>
+            <div class="key" onclick="changeDir('up')">2<span>ABC</span> ▲</div>
+            <div class="key">3<span>DEF</span></div>
+            <div class="key" onclick="changeDir('left')">4<span>GHI</span> ◀</div>
+            <div class="key">5<span>JKL</span></div>
+            <div class="key" onclick="changeDir('right')">6<span>MNO</span> ▶</div>
+            <div class="key">7<span>PQRS</span></div>
+            <div class="key" onclick="changeDir('down')">8<span>TUV</span> ▼</div>
+            <div class="key">9<span>WXYZ</span></div>
+        </div>
+    </div>
+
+    <!-- Bottom Ad Slot -->
+    <div id="ad-bottom" class="ad-container">
+        <span>SPONSORED</span>
+        <div style="color: #27ae60; cursor: pointer;">Play Modern Games 2026 - Install Now!</div>
+    </div>
+
+    <div id="hell-overlay"></div>
+
+    <audio id="audio-retro" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3"></audio>
+    <audio id="audio-scary" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3"></audio>
+
+    <script>
+        const boardEl = document.getElementById('board');
+        const scoreEl = document.getElementById('score');
+        const targetEl = document.getElementById('target');
+        const hiScoreEl = document.getElementById('hi-score');
+        const stgLabel = document.getElementById('stg-label');
+        const audioRetro = document.getElementById('audio-retro');
+        const audioScary = document.getElementById('audio-scary');
+
+        const GRID_SIZE = 20;
+        let snake = [{x: 10, y: 10}];
+        let food = {x: 5, y: 5};
+        let direction = {x: 1, y: 0};
+        let nextDir = {x: 1, y: 0};
+        let gameInterval;
+        let stage = 1;
+        let isHell = false;
+        let hiScore = 0;
+
+        const targets = { 1: 3, 2: 5, 3: 666 };
+
+        function startGame(stg) {
+            document.getElementById('menu').style.display = 'none';
+            document.getElementById('levelup').style.display = 'none';
+            document.getElementById('gameover').style.display = 'none';
+            
+            snake = [{x: 10, y: 10}];
+            direction = {x: 1, y: 0};
+            nextDir = {x: 1, y: 0};
+            stage = stg;
+            isHell = (stg === 3);
+
+            targetEl.innerText = targets[stg] === 666 ? "???" : targets[stg].toString().padStart(3, '0');
+            stgLabel.innerText = isHell ? "CRITICAL" : `STAGE ${stg}`;
+            updateScore();
+            spawnFood();
+
+            if (isHell) {
+                triggerHell();
+            } else {
+                audioRetro.play().catch(() => {});
+                audioRetro.volume = 0.3;
+            }
+
+            if(gameInterval) clearInterval(gameInterval);
+            gameInterval = setInterval(gameLoop, isHell ? 70 : (160 - (stg * 30)));
+        }
+
+        function gameLoop() {
+            direction = nextDir;
+            const head = { 
+                x: (snake[0].x + direction.x + GRID_SIZE) % GRID_SIZE, 
+                y: (snake[0].y + direction.y + GRID_SIZE) % GRID_SIZE 
+            };
+
+            // Body collision
+            if (snake.some(s => s.x === head.x && s.y === head.y)) {
+                return gameOver();
+            }
+
+            snake.unshift(head);
+
+            if (head.x === food.x && head.y === food.y) {
+                const curScore = snake.length - 1;
+                updateScore();
+                if (curScore >= targets[stage]) {
+                    levelUp();
+                }
+                spawnFood();
+            } else {
+                snake.pop();
+            }
+
+            draw();
+        }
+
+        function triggerHell() {
+            audioRetro.pause();
+            audioScary.play().catch(() => {});
+            audioScary.volume = 1.0;
+
+            document.getElementById('screen').classList.add('hell');
+            document.getElementById('phone').classList.add('scare');
+            document.getElementById('hell-overlay').style.display = 'block';
+            document.querySelectorAll('.ad-container').forEach(a => a.classList.add('hide'));
+        }
+
+        function levelUp() {
+            clearInterval(gameInterval);
+            document.getElementById('levelup').style.display = 'flex';
+            document.getElementById('next-btn').onclick = () => startGame(stage + 1);
+        }
+
+        function gameOver() {
+            clearInterval(gameInterval);
+            document.getElementById('gameover').style.display = 'flex';
+            if (snake.length - 1 > hiScore) {
+                hiScore = snake.length - 1;
+                hiScoreEl.innerText = hiScore.toString().padStart(3, '0');
+            }
+        }
+
+        function spawnFood() {
+            food = {
+                x: Math.floor(Math.random() * GRID_SIZE),
+                y: Math.floor(Math.random() * GRID_SIZE)
+            };
+        }
+
+        function draw() {
+            boardEl.innerHTML = '';
+            snake.forEach((s, i) => {
+                const part = document.createElement('div');
+                part.className = 'snake' + (isHell ? ' hell-part' : '');
+                part.style.gridColumnStart = s.x + 1;
+                part.style.gridRowStart = s.y + 1;
+                if(isHell) part.style.opacity = 1 - (i * 0.03);
+                boardEl.appendChild(part);
+            });
+
+            const f = document.createElement('div');
+            f.className = 'food';
+            if(isHell) f.style.background = '#ff0000';
+            f.style.gridColumnStart = food.x + 1;
+            f.style.gridRowStart = food.y + 1;
+            boardEl.appendChild(f);
+        }
+
+        function updateScore() {
+            scoreEl.innerText = (snake.length - 1).toString().padStart(3, '0');
+        }
+
+        function changeDir(dir) {
+            if (isHell && Math.random() > 0.85) return;
+            switch(dir) {
+                case 'up': if(direction.y === 0) nextDir = {x: 0, y: -1}; break;
+                case 'down': if(direction.y === 0) nextDir = {x: 0, y: 1}; break;
+                case 'left': if(direction.x === 0) nextDir = {x: -1, y: 0}; break;
+                case 'right': if(direction.x === 0) nextDir = {x: 1, y: 0}; break;
+            }
+        }
+
+        window.addEventListener('keydown', e => {
+            if(e.key === 'ArrowUp') changeDir('up');
+            if(e.key === 'ArrowDown') changeDir('down');
+            if(e.key === 'ArrowLeft') changeDir('left');
+            if(e.key === 'ArrowRight') changeDir('right');
+        });
+    </script>
+</body>
+</html>
+
