@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Retro Snake - Official Emulator</title>
+    <title>Retro Snake - Classic Emulator</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     
-    <!-- Ads are restricted to banners only to prevent forced redirects -->
+    <!-- Sabhi auto-redirecting scripts (Popunder/Social Bar) hata diye gaye hain -->
+
     <style>
         :root {
             --nokia-green: #98b000;
@@ -23,26 +24,29 @@
             overflow: hidden; transition: background 0.5s;
         }
 
-        /* --- AD CONTAINERS --- */
-        .ad-slot { width: 100%; max-width: 340px; margin: 5px 0; text-align: center; min-height: 50px; transition: opacity 0.5s; }
-        .hide-ads .ad-slot, .hide-ads #curiosity-link { opacity: 0 !important; pointer-events: none !important; height: 0 !important; }
+        /* --- SAFE BANNERS (OUTSIDE PHONE) --- */
+        .safe-ad-area { 
+            width: 100%; max-width: 340px; text-align: center; 
+            margin: 8px 0; min-height: 50px; transition: opacity 0.5s; 
+        }
+        .hide-ads .safe-ad-area, .hide-ads #curiosity-link { opacity: 0 !important; pointer-events: none !important; height: 0 !important; }
 
         /* --- LCD SCOREBOARD --- */
         #scoreboard {
             width: 340px; background: #000;
             border: 3px solid var(--nokia-green); border-radius: 12px;
             display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 18px; margin-bottom: 15px;
-            box-shadow: 0 0 25px var(--lcd-glow);
+            padding: 12px 18px; margin-bottom: 10px;
+            box-shadow: 0 0 20px var(--lcd-glow);
         }
-        .score-val { font-size: 40px; color: #fff; text-shadow: 0 0 15px var(--lcd-glow); line-height: 1; }
+        .score-val { font-size: 42px; color: #fff; text-shadow: 0 0 10px var(--lcd-glow); line-height: 1; }
         .target-val { font-size: 18px; opacity: 0.6; color: var(--nokia-green); }
 
         /* --- NOKIA FRAME --- */
         #phone {
             position: relative; width: 340px; background: var(--nokia-silver);
             border-radius: 45px; padding: 25px; border: 10px solid #888;
-            box-shadow: 0 30px 80px rgba(0,0,0,1); transition: all 0.2s;
+            box-shadow: 0 30px 60px rgba(0,0,0,1); transition: all 0.2s;
         }
         #phone.shake { animation: phone-vibrate 0.1s infinite; border-color: #a00; background: #1a0000; }
         #brand { text-align: center; font-size: 24px; font-weight: 900; color: #222; margin-bottom: 15px; font-style: italic; letter-spacing: -1px; }
@@ -60,42 +64,42 @@
         .food-bit { background: #000; border-radius: 50%; animation: food-pulse 0.6s infinite; }
         .hell-snake { background: #fff; box-shadow: 0 0 20px #fff; }
 
-        /* --- MASSIVE EMERGENCY STOP --- */
+        /* --- EMERGENCY STOP (ONLY REDIRECT HERE) --- */
         #stop-btn {
             display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: #fff; color: #f00; border: 8px solid #f00;
-            padding: 20px 30px; font-family: 'VT323', monospace; font-size: 32px;
+            background: #fff; color: #f00; border: 6px solid #f00;
+            padding: 18px 25px; font-family: 'VT323', monospace; font-size: 30px;
             font-weight: 900; cursor: pointer; z-index: 999;
-            box-shadow: 0 0 60px #fff, 0 0 30px #f00;
+            box-shadow: 0 0 40px #fff, 0 0 20px #f00;
             animation: stop-flash 0.3s infinite alternate; text-transform: uppercase;
         }
 
-        /* --- UI OVERLAYS --- */
+        /* --- UI OVERLAYS (NO ADS IN SCREEN) --- */
         .overlay { position: absolute; inset: 0; background: var(--nokia-green); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #000; text-align: center; padding: 15px; }
-        .btn-big { background: #000; color: var(--nokia-green); border: none; padding: 12px 35px; font-family: 'VT323', monospace; font-size: 30px; cursor: pointer; margin-bottom: 10px; }
+        .btn-big { background: #000; color: var(--nokia-green); border: none; padding: 12px 35px; font-family: 'VT323', monospace; font-size: 32px; cursor: pointer; margin-bottom: 10px; }
 
         /* --- KEYPAD --- */
         #keypad { margin-top: 15px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .key { background: #333; height: 50px; border-radius: 12px; color: white; display: flex; justify-content: center; align-items: center; font-size: 18px; border-bottom: 4px solid #111; cursor: pointer; }
+        .key { background: #333; height: 50px; border-radius: 12px; color: white; display: flex; justify-content: center; align-items: center; font-size: 20px; border-bottom: 4px solid #111; cursor: pointer; }
 
         /* --- ANIMATIONS --- */
-        @keyframes stop-flash { 0% { transform: translate(-50%, -50%) scale(1); background: #fff; } 100% { transform: translate(-50%, -50%) scale(1.1); background: #f00; color: #fff; } }
+        @keyframes stop-flash { 0% { background: #fff; color: #f00; } 100% { background: #f00; color: #fff; } }
         @keyframes phone-vibrate { 0% { transform: translate(3px, 3px); } 50% { transform: translate(-3px, -3px); } }
-        @keyframes screen-glitch { 0% { transform: skewX(5deg); opacity: 0.8; } 50% { transform: skewX(-5deg); opacity: 1; } }
+        @keyframes screen-glitch { 0% { transform: skewX(5deg); } 50% { transform: skewX(-5deg); } }
         @keyframes food-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.4); } }
 
         #curiosity-link {
             margin-top: 20px; text-decoration: none; color: #ffcc00; font-size: 16px;
             font-weight: bold; animation: pulse-btn 1s infinite;
-            display: none; cursor: pointer; text-shadow: 0 0 8px #000;
+            display: none; cursor: pointer; text-shadow: 0 0 5px #000;
         }
         @keyframes pulse-btn { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
     </style>
 </head>
 <body id="main-body">
 
-    <!-- TOP BANNER -->
-    <div class="ad-slot">
+    <!-- TOP SAFE BANNER -->
+    <div class="safe-ad-area">
         <script>
             atOptions = { 'key' : '4ae13dfbcfff4f8fa3767c34f79bfaf5', 'format' : 'iframe', 'height' : 50, 'width' : 320, 'params' : {} };
         </script>
@@ -110,7 +114,7 @@
         </div>
         <div class="score-box" style="text-align: right;">
             <span style="font-size: 10px; color: var(--nokia-green);">HI-SCORE</span>
-            <span id="hi-val" class="score-val" style="font-size: 28px;">000</span>
+            <span id="hi-val" class="score-val" style="font-size: 30px;">000</span>
         </div>
     </div>
 
@@ -125,18 +129,13 @@
             <!-- Menus -->
             <div id="ui-menu" class="overlay">
                 <button class="btn-big" onclick="startLevel(1)">START GAME</button>
-                <div style="font-size: 10px; opacity: 0.7;">Link Status: Stable</div>
-                <!-- Native Ad (Menu) -->
-                <div style="width: 100%; height: 50px; overflow: hidden; margin-top: 10px;">
-                    <script async="async" data-cfasync="false" src="https://pl2870917.effectivegatecpm.com/f2612ef66e31d3fa19084a1d8c3ed587/invoke.js"></script>
-                    <div id="container-f2612ef66e31d3fa19084a1d8c3ed587"></div>
-                </div>
+                <div style="font-size: 10px; opacity: 0.7;">System Link: Online</div>
             </div>
 
             <div id="ui-win" class="overlay" style="display: none;">
                 <h2 style="margin: 0; font-size: 24px;">STAGE CLEAR!</h2>
                 <div onclick="window.open('https://www.effectivegatecpm.com/x8j5ppcu?key=c8d3de581f2f308306de3b971e6d826c')" 
-                     style="background: rgba(0,0,0,0.1); padding: 8px; font-size: 11px; cursor: pointer; border: 1px dashed black; font-weight: bold; margin: 10px 0;">
+                     style="background: rgba(0,0,0,0.1); padding: 10px; font-size: 11px; cursor: pointer; border: 1px dashed black; font-weight: bold; margin: 15px 0;">
                     🎁 CLICK FOR GOLD SKIN 🎁
                 </div>
                 <button class="btn-big" id="next-lvl-btn" style="font-size: 22px;">NEXT LEVEL</button>
@@ -155,13 +154,13 @@
         </div>
     </div>
 
-    <!-- Curiosity Link (Smartlink) -->
+    <!-- Curiosity Link (Manual Redirect) -->
     <a id="curiosity-link" onclick="window.open('https://www.effectivegatecpm.com/x8j5ppcu?key=c8d3de581f2f308306de3b971e6d826c')">
         🔥 UNLOCK ALL STAGES & NO ADS 🔥
     </a>
 
-    <!-- BOTTOM BANNER -->
-    <div class="ad-slot">
+    <!-- BOTTOM SAFE BANNER -->
+    <div class="safe-ad-area">
         <script>
             atOptions = { 'key' : '4ae13dfbcfff4f8fa3767c34f79bfaf5', 'format' : 'iframe', 'height' : 50, 'width' : 320, 'params' : {} };
         </script>
@@ -196,7 +195,7 @@
             if (isHell) {
                 sndCalm.pause();
                 sndHell.currentTime = 0;
-                sndHell.play().catch(e => console.log("Missing creepy.mp3"));
+                sndHell.play().catch(e => console.log("Missing audio"));
                 document.getElementById('main-body').classList.add('hide-ads');
                 document.getElementById('screen').classList.add('hell');
                 document.getElementById('phone').classList.add('shake');
@@ -211,6 +210,7 @@
 
         function killPrank() {
             sndHell.pause();
+            // Manual Redirect Only
             window.location.href = "https://www.effectivegatecpm.com/x8j5ppcu?key=c8d3de581f2f308306de3b971e6d826c";
         }
 
