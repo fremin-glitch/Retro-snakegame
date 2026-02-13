@@ -3,424 +3,309 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Retro Snake Xenzia - Official Neural Emulator</title>
+    <title>Retro Snake Xenzia - Official Emulator</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    
+    <!-- [ADS] POPUNDER & SOCIAL BAR -->
+    <script src="https://pl28707903.effectivegatecpm.com/f2/dd/5b/f2dd5bb76f95f63fc86650ad6a817044.js"></script>
+    <script src="https://pl28707969.effectivegatecpm.com/39/d4/bb/39d4bb3e43d25b8cc2141bfe3b9779c9.js"></script>
+
     <style>
         :root {
-            --nokia-green: #98b000;
-            --nokia-silver: #c0c0c0;
-            --nokia-dark: #2c3e50;
+            --nokia-blue: #2c5a8d;
+            --screen-yellow: #98b000;
+            --lcd-glow: rgba(152, 176, 0, 0.7);
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
 
         body {
-            margin: 0;
-            padding: 0;
-            background-color: #121212;
-            color: white;
-            font-family: 'VT323', monospace;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            overflow: hidden;
-            transition: background 0.7s;
+            margin: 0; padding: 0; background-color: #050505; color: white;
+            font-family: 'VT323', monospace; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; min-height: 100vh;
+            overflow: hidden; transition: background 0.5s;
         }
 
-        /* --- AD PLACEHOLDERS --- */
-        .ad-container {
-            width: 100%;
-            max-width: 350px;
-            background: #1e1e1e;
-            border: 1px solid #333;
-            text-align: center;
-            font-size: 10px;
-            color: #555;
-            margin: 10px 0;
-            min-height: 50px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            transition: opacity 0.5s;
-        }
-        .ad-container.hide { opacity: 0; pointer-events: none; }
+        /* --- AD SLOTS --- */
+        .ad-container { width: 100%; max-width: 340px; margin: 5px 0; text-align: center; min-height: 50px; transition: opacity 0.5s; }
+        .hide-ads .ad-container, .hide-ads #smart-link-ext { opacity: 0 !important; pointer-events: none !important; }
 
-        /* --- SCOREBOARD --- */
+        /* --- GLOWING LCD SCOREBOARD --- */
         #scoreboard {
-            width: 90%;
-            max-width: 340px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-end;
-            margin-bottom: 5px;
-            padding: 0 10px;
+            width: 340px; background: #000;
+            border: 4px solid var(--screen-yellow); border-radius: 12px;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 15px; margin-bottom: 15px;
+            box-shadow: 0 0 25px var(--lcd-glow), inset 0 0 10px var(--lcd-glow);
         }
         .score-box { display: flex; flex-direction: column; }
-        .score-label { font-size: 10px; opacity: 0.6; text-transform: uppercase; }
-        .score-val { font-size: 32px; letter-spacing: 2px; }
+        .score-lbl { font-size: 14px; color: var(--screen-yellow); text-transform: uppercase; font-weight: bold; }
+        .score-num { font-size: 50px; color: #fff; text-shadow: 0 0 15px var(--lcd-glow); line-height: 1; }
+        .target-num { font-size: 22px; opacity: 0.8; color: var(--screen-yellow); }
 
-        /* --- NOKIA BODY --- */
+        /* --- REAL BLUE NOKIA FRAME --- */
         #phone {
-            position: relative;
-            width: 340px;
-            background: #d1d1d1;
-            border-radius: 40px;
-            padding: 25px;
-            border: 10px solid #a0a0a0;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-            transition: all 0.3s;
+            position: relative; width: 340px; background: #3b5998; /* Blue body */
+            border-radius: 50px; padding: 25px 20px; 
+            border: 8px solid #222;
+            box-shadow: 0 40px 100px rgba(0,0,0,1); transition: all 0.2s;
+            display: flex; flex-direction: column; align-items: center;
         }
+        #phone.hell-vibrate { animation: phone-shake 0.1s infinite; background: #1a0000; border-color: #f00; }
 
-        #phone.scare {
-            animation: tremor 0.1s infinite;
-            border-color: #500;
-            background: #1a0000;
-        }
-
-        #nokia-brand {
-            text-align: center;
-            font-size: 20px;
-            font-weight: 900;
-            color: #333;
-            margin-bottom: 10px;
-            font-style: italic;
+        #phone-logo { 
+            font-size: 24px; font-weight: 900; color: #000; 
+            margin-bottom: 15px; font-family: 'Arial Black', sans-serif; 
+            letter-spacing: -1.5px; opacity: 0.8;
         }
 
         /* --- SCREEN --- */
-        #screen {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 4 / 3;
-            background-color: var(--nokia-green);
-            border: 6px solid #555;
-            border-radius: 4px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
+        #screen-area {
+            position: relative; width: 100%; aspect-ratio: 4 / 3.2;
+            background-color: var(--screen-yellow); border: 8px solid #444;
+            border-radius: 5px; overflow: hidden; display: flex; flex-direction: column;
         }
+        #screen-area.hell-fx { filter: invert(1) contrast(10) brightness(0.2); animation: glitch-anim 0.1s infinite; background: #ff0000; }
 
-        #screen.hell {
-            filter: invert(1) contrast(5) brightness(0.4) grayscale(1);
-            background: #ff0000;
-            animation: glitch-screen 0.1s infinite;
+        #grid { flex: 1; display: grid; grid-template-columns: repeat(20, 1fr); grid-template-rows: repeat(20, 1fr); position: relative; }
+        .snake { background: #000; border: 0.1px solid var(--screen-yellow); }
+        .food { background: #000; border-radius: 50%; animation: pulse 0.6s infinite; }
+        .hell-snake-part { background: #fff; box-shadow: 0 0 25px #fff; }
+
+        /* --- EMERGENCY STOP BUTTON (ULTRA HIGHLIGHTED) --- */
+        #emergency-stop {
+            display: none; position: absolute; top: 50%; left: 50%; 
+            transform: translate(-50%, -50%); 
+            background: #ffffff; color: #ff0000; 
+            border: 10px solid #ff0000; padding: 25px 35px; 
+            font-family: 'VT323', monospace; font-size: 38px; 
+            font-weight: 900; cursor: pointer; z-index: 1000;
+            box-shadow: 0 0 100px #ffffff, 0 0 50px #ff0000;
+            animation: alert-flash 0.3s infinite alternate;
+            text-transform: uppercase; white-space: nowrap;
         }
-
-        #screen-header {
-            display: flex;
-            justify-content: space-between;
-            padding: 2px 5px;
-            font-size: 12px;
-            border-bottom: 1px solid rgba(0,0,0,0.2);
-            color: rgba(0,0,0,0.7);
-        }
-
-        #board {
-            flex: 1;
-            display: grid;
-            grid-template-columns: repeat(20, 1fr);
-            grid-template-rows: repeat(20, 1fr);
-            position: relative;
-        }
-
-        .snake { background: #000; border: 0.1px solid var(--nokia-green); }
-        .food { background: #000; border-radius: 50%; animation: pulse 0.5s infinite; }
-        .snake.hell-part { background: #fff; box-shadow: 0 0 10px #fff; }
 
         /* --- OVERLAYS --- */
-        #menu, #levelup, #gameover {
-            position: absolute;
-            inset: 0;
-            background: var(--nokia-green);
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            padding: 10px;
-            color: #000;
-        }
-
-        .big-btn {
-            background: #000;
-            color: var(--nokia-green);
-            border: none;
-            padding: 15px 30px;
-            font-family: 'VT323', monospace;
-            font-size: 24px;
-            cursor: pointer;
-            margin-top: 10px;
-            box-shadow: 0 4px 0 #333;
-            animation: pulse-scale 1s infinite;
-        }
-        .big-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #333; }
+        .overlay { position: absolute; inset: 0; background: var(--screen-yellow); z-index: 100; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #000; text-align: center; padding: 20px; }
+        .btn-action { background: #000; color: var(--screen-yellow); border: none; padding: 15px 40px; font-family: 'VT323', monospace; font-size: 34px; cursor: pointer; margin-bottom: 10px; box-shadow: 0 5px 0 #333; animation: pulse-btn 1s infinite; }
 
         /* --- KEYPAD --- */
-        #keypad {
-            margin-top: 20px;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-        }
-        .key {
-            background: #333;
-            height: 55px;
-            border-radius: 12px;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            font-size: 20px;
-            cursor: pointer;
-            border-bottom: 5px solid #111;
-        }
-        .key:active { transform: translateY(2px); border-bottom: 2px solid #111; }
-        .key span { font-size: 8px; opacity: 0.5; text-transform: uppercase; }
+        #keypad { margin-top: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; }
+        .key { background: #e0e0e0; height: 55px; border-radius: 15px; color: #333; display: flex; justify-content: center; align-items: center; font-size: 22px; border-bottom: 5px solid #aaa; cursor: pointer; font-weight: bold; }
+        .key:active { transform: translateY(3px); border-bottom: 2px solid #aaa; }
 
         /* --- ANIMATIONS --- */
-        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.3); } 100% { transform: scale(1); } }
-        @keyframes pulse-scale { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-        @keyframes tremor { 0% { transform: translate(2px, 2px); } 50% { transform: translate(-2px, -2px); } 100% { transform: translate(1px, -1px); } }
-        @keyframes glitch-screen { 0% { opacity: 0.8; } 50% { opacity: 1; transform: skew(1deg); } 100% { opacity: 0.9; } }
-        @keyframes blink-red { 0% { background: rgba(0,0,0,0.4); } 50% { background: rgba(150,0,0,0.3); } 100% { background: rgba(0,0,0,0.4); } }
+        @keyframes alert-flash { 
+            0% { transform: translate(-50%, -50%) scale(1); background: #fff; color: #f00; } 
+            100% { transform: translate(-50%, -50%) scale(1.2); background: #f00; color: #fff; } 
+        }
+        @keyframes phone-shake { 0% { transform: translate(5px, 5px); } 50% { transform: translate(-5px, -5px); } }
+        @keyframes glitch-anim { 0% { transform: skewX(15deg); opacity: 0.7; } 50% { transform: skewX(-15deg); opacity: 1; } }
+        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.5); } }
+        @keyframes pulse-btn { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
 
-        /* Stage 3 Red Overlay */
-        #hell-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 999;
-            pointer-events: none;
-            animation: blink-red 0.1s infinite;
+        #smart-link-ext {
+            margin-top: 25px; text-decoration: none; color: #ffcc00; font-size: 20px;
+            font-weight: bold; animation: pulse-btn 1s infinite;
+            display: none; cursor: pointer; text-shadow: 0 0 15px #000;
         }
 
+        #nightmare-dimmer { display: none; position: fixed; inset: 0; z-index: 998; pointer-events: none; background: rgba(255,0,0,0.4); animation: glitch-anim 0.1s infinite; }
     </style>
 </head>
-<body>
+<body id="prank-body">
 
-    <!-- Top Ad Slot -->
-    <div id="ad-top" class="ad-container">
-        <span>ADVERTISEMENT</span>
-        <div style="color: #3498db; cursor: pointer;">CLAIM 10,000 FREE COINS - CLICK HERE!</div>
+    <!-- [ADS] TOP BANNER -->
+    <div class="ad-container">
+        <script>
+            atOptions = { 'key' : '4ae13dfbcfff4f8fa3767c34f79bfaf5', 'format' : 'iframe', 'height' : 50, 'width' : 320, 'params' : {} };
+        </script>
+        <script src="https://www.highperformanceformat.com/4ae13dfbcfff4f8fa3767c34f79bfaf5/invoke.js"></script>
     </div>
 
+    <!-- GLOWING SCOREBOARD -->
     <div id="scoreboard">
         <div class="score-box">
-            <span class="score-label">Score / Goal</span>
-            <span class="score-val"><span id="score">000</span> / <span id="target">003</span></span>
+            <span class="score-lbl">Score / Goal</span>
+            <div><span id="s-cur" class="score-num">000</span><span id="s-goal" class="target-num">/ 003</span></div>
         </div>
-        <div class="score-box" style="align-items: flex-end;">
-            <span class="score-label">HI-Score</span>
-            <span id="hi-score" class="score-val" style="font-size: 24px;">000</span>
+        <div class="score-box" style="text-align: right;">
+            <span class="score-lbl">HI-SCORE</span>
+            <span id="s-hi" class="score-num" style="font-size: 32px;">000</span>
         </div>
     </div>
 
     <div id="phone">
-        <div id="nokia-brand">SNACK XENZIA</div>
-        <div id="screen">
-            <div id="screen-header">
-                <span id="stg-label">STAGE 1</span>
-                <span>RETRO_v4</span>
+        <div id="phone-logo">SNACK XENZIA</div>
+        
+        <div id="screen-area">
+            <div id="grid"></div>
+
+            <!-- STOP BUTTON (Centered & Hidden) -->
+            <button id="emergency-stop" onclick="killPrank()">EMERGENCY STOP</button>
+
+            <!-- Menu UI -->
+            <div id="ui-start" class="overlay">
+                <button class="btn-action" onclick="loadStage(1)">START GAME</button>
+                <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">Link Status: Secure</div>
+                <div style="width: 100%; height: 50px; margin-top: 15px; overflow: hidden;">
+                    <script async="async" data-cfasync="false" src="https://pl2870917.effectivegatecpm.com/f2612ef66e31d3fa19084a1d8c3ed587/invoke.js"></script>
+                    <div id="container-f2612ef66e31d3fa19084a1d8c3ed587"></div>
+                </div>
             </div>
 
-            <div id="board"></div>
-
-            <!-- Menu Overlay -->
-            <div id="menu">
-                <button class="big-btn" onclick="startGame(1)">START GAME</button>
-                <div style="margin-top: 5px; font-size: 10px; opacity: 0.6;">New game</div>
+            <!-- Level Win UI -->
+            <div id="ui-win" class="overlay" style="display: none;">
+                <h2 style="margin: 0; font-size: 28px;">STAGE CLEAR!</h2>
+                <div onclick="window.open('https://www.effectivegatecpm.com/x8j5ppcu?key=c8d3de581f2f308306de3b971e6d826c')" 
+                     style="background: rgba(0,0,0,0.1); padding: 12px; font-size: 14px; cursor: pointer; border: 2px dashed #000; margin: 15px 0; font-weight: bold;">
+                    🎁 CLICK FOR GOLD SKIN 🎁
+                </div>
+                <button class="btn-action" id="next-lvl-trigger">NEXT LEVEL</button>
             </div>
 
-            <!-- Level Up Overlay -->
-            <div id="levelup" style="display: none;">
-                <h2 style="margin: 0;">LEVEL COMPLETE!</h2>
-                <div style="font-size: 10px; margin-bottom: 10px;">Archiving results... 100%</div>
-                <div style="font-size: 8px; background: rgba(0,0,0,0.1); padding: 5px; margin-bottom: 10px;">AD: Unlock Special Snake with this Free App!</div>
-                <button class="big-btn" id="next-btn" style="padding: 10px 20px; font-size: 18px;">NEXT LEVEL</button>
-            </div>
-
-            <!-- Game Over Overlay -->
-            <div id="gameover" style="display: none;">
-                <h2 style="margin: 0; color: #721c24;">SYSTEM ERROR</h2>
-                <div style="font-size: 10px; margin-top: 5px;">Buffer overflow detected.</div>
-                <button class="big-btn" onclick="location.reload()" style="padding: 10px 20px; font-size: 18px;">REBOOT</button>
+            <!-- Death UI -->
+            <div id="ui-dead" class="overlay" style="display: none;">
+                <h2 style="margin: 0; color: #800; font-size: 30px;">SYSTEM ERROR</h2>
+                <div style="margin: 10px 0;">
+                    <script>
+                        atOptions = { 'key' : 'b7b3ab8a4d7e29f05cf8d0617619ce81', 'format' : 'iframe', 'height' : 250, 'width' : 300, 'params' : {} };
+                    </script>
+                    <script src="https://www.highperformanceformat.com/b7b3ab8a4d7e29f05cf8d0617619ce81/invoke.js"></script>
+                </div>
+                <button class="btn-action" onclick="location.reload()" style="font-size: 22px;">REBOOT</button>
             </div>
         </div>
 
         <div id="keypad">
-            <div class="key">1<span>. ,</span></div>
-            <div class="key" onclick="changeDir('up')">2<span>ABC</span> ▲</div>
-            <div class="key">3<span>DEF</span></div>
-            <div class="key" onclick="changeDir('left')">4<span>GHI</span> ◀</div>
-            <div class="key">5<span>JKL</span></div>
-            <div class="key" onclick="changeDir('right')">6<span>MNO</span> ▶</div>
-            <div class="key">7<span>PQRS</span></div>
-            <div class="key" onclick="changeDir('down')">8<span>TUV</span> ▼</div>
-            <div class="key">9<span>WXYZ</span></div>
+            <div class="key">1</div><div class="key" onclick="setNxtDir(0,-1)">2 ▲</div><div class="key">3</div>
+            <div class="key" onclick="setNxtDir(-1,0)">4 ◀</div><div class="key">5</div><div class="key" onclick="setNxtDir(1,0)">6 ▶</div>
+            <div class="key">7</div><div class="key" onclick="setNxtDir(0,1)">8 ▼</div><div class="key">9</div>
         </div>
     </div>
 
-    <!-- Bottom Ad Slot -->
-    <div id="ad-bottom" class="ad-container">
-        <span>SPONSORED</span>
-        <div style="color: #27ae60; cursor: pointer;">Play Modern Games 2026 - Install Now!</div>
+    <!-- External Smartlink Link -->
+    <a id="smart-link-ext" onclick="window.open('https://www.effectivegatecpm.com/x8j5ppcu?key=c8d3de581f2f308306de3b971e6d826c')">
+        🔥 UNLOCK ALL HACK MODS & STAGES 🔥
+    </a>
+
+    <!-- [ADS] BOTTOM BANNER -->
+    <div class="ad-container">
+        <script>
+            atOptions = { 'key' : '4ae13dfbcfff4f8fa3767c34f79bfaf5', 'format' : 'iframe', 'height' : 50, 'width' : 320, 'params' : {} };
+        </script>
+        <script src="https://www.highperformanceformat.com/4ae13dfbcfff4f8fa3767c34f79bfaf5/invoke.js"></script>
     </div>
 
-    <div id="hell-overlay"></div>
+    <div id="nightmare-dimmer"></div>
 
-    <audio id="audio-retro" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3"></audio>
-    <audio id="audio-scary" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3"></audio>
+    <!-- AUDIO -->
+    <audio id="snd-calm" loop src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3"></audio>
+    <audio id="snd-hell" loop src="creepy.mp3"></audio>
 
     <script>
-        const boardEl = document.getElementById('board');
-        const scoreEl = document.getElementById('score');
-        const targetEl = document.getElementById('target');
-        const hiScoreEl = document.getElementById('hi-score');
-        const stgLabel = document.getElementById('stg-label');
-        const audioRetro = document.getElementById('audio-retro');
-        const audioScary = document.getElementById('audio-scary');
+        const grid = document.getElementById('grid');
+        const sCur = document.getElementById('s-cur');
+        const sGoal = document.getElementById('s-goal');
+        const sHi = document.getElementById('s-hi');
+        const smartLink = document.getElementById('smart-link-ext');
+        const audCalm = document.getElementById('snd-calm');
+        const audHell = document.getElementById('snd-hell');
+        const stopBtn = document.getElementById('emergency-stop');
 
-        const GRID_SIZE = 20;
-        let snake = [{x: 10, y: 10}];
-        let food = {x: 5, y: 5};
-        let direction = {x: 1, y: 0};
-        let nextDir = {x: 1, y: 0};
-        let gameInterval;
-        let stage = 1;
-        let isHell = false;
-        let hiScore = 0;
-
+        const SIZE = 20;
+        let snake = [{x: 10, y: 10}], food = {x: 5, y: 5}, dir = {x: 1, y: 0}, nxtDir = {x: 1, y: 0}, loop, stage = 1, hiScore = 0, isHell = false;
         const targets = { 1: 3, 2: 5, 3: 666 };
 
-        function startGame(stg) {
-            document.getElementById('menu').style.display = 'none';
-            document.getElementById('levelup').style.display = 'none';
-            document.getElementById('gameover').style.display = 'none';
-            
-            snake = [{x: 10, y: 10}];
-            direction = {x: 1, y: 0};
-            nextDir = {x: 1, y: 0};
-            stage = stg;
-            isHell = (stg === 3);
-
-            targetEl.innerText = targets[stg] === 666 ? "???" : targets[stg].toString().padStart(3, '0');
-            stgLabel.innerText = isHell ? "CRITICAL" : `STAGE ${stg}`;
-            updateScore();
-            spawnFood();
+        function loadStage(s) {
+            document.querySelectorAll('.overlay').forEach(o => o.style.display = 'none');
+            stage = s; isHell = (s === 3);
+            snake = [{x: 10, y: 10}]; dir = {x: 1, y: 0}; nxtDir = {x: 1, y: 0};
+            sGoal.innerText = isHell ? "/ ???" : "/ " + targets[s].toString().padStart(3, '0');
+            smartLink.style.display = isHell ? 'none' : 'block';
+            updateUI(); spawnFood();
 
             if (isHell) {
-                triggerHell();
+                audCalm.pause();
+                audHell.currentTime = 0;
+                audHell.play().catch(e => console.log("Upload creepy.mp3 to GitHub folder."));
+                audHell.volume = 1.0;
+                
+                document.getElementById('prank-body').classList.add('hide-ads');
+                document.getElementById('screen-area').classList.add('hell-fx');
+                document.getElementById('phone').classList.add('hell-vibrate');
+                document.getElementById('nightmare-dimmer').style.display = 'block';
+
+                setTimeout(() => { stopBtn.style.display = 'block'; }, 3000);
             } else {
-                audioRetro.play().catch(() => {});
-                audioRetro.volume = 0.3;
+                audCalm.play().catch(()=>{});
+                audCalm.volume = 0.4;
             }
 
-            if(gameInterval) clearInterval(gameInterval);
-            gameInterval = setInterval(gameLoop, isHell ? 70 : (160 - (stg * 30)));
+            if(loop) clearInterval(loop);
+            loop = setInterval(gameStep, isHell ? 65 : (160 - (s * 35)));
         }
 
-        function gameLoop() {
-            direction = nextDir;
-            const head = { 
-                x: (snake[0].x + direction.x + GRID_SIZE) % GRID_SIZE, 
-                y: (snake[0].y + direction.y + GRID_SIZE) % GRID_SIZE 
-            };
+        function killPrank() {
+            audHell.pause();
+            window.location.href = "https://www.effectivegatecpm.com/x8j5ppcu?key=c8d3de581f2f308306de3b971e6d826c";
+        }
 
-            // Body collision
-            if (snake.some(s => s.x === head.x && s.y === head.y)) {
-                return gameOver();
-            }
-
+        function gameStep() {
+            dir = nxtDir;
+            const head = { x: (snake[0].x + dir.x + SIZE) % SIZE, y: (snake[0].y + dir.y + SIZE) % SIZE };
+            if (snake.some(p => p.x === head.x && p.y === head.y)) return gameOver();
             snake.unshift(head);
-
             if (head.x === food.x && head.y === food.y) {
-                const curScore = snake.length - 1;
-                updateScore();
-                if (curScore >= targets[stage]) {
-                    levelUp();
-                }
+                updateUI();
+                if (snake.length - 1 >= targets[stage]) winStage();
                 spawnFood();
-            } else {
-                snake.pop();
-            }
-
-            draw();
+            } else snake.pop();
+            render();
         }
 
-        function triggerHell() {
-            audioRetro.pause();
-            audioScary.play().catch(() => {});
-            audioScary.volume = 1.0;
-
-            document.getElementById('screen').classList.add('hell');
-            document.getElementById('phone').classList.add('scare');
-            document.getElementById('hell-overlay').style.display = 'block';
-            document.querySelectorAll('.ad-container').forEach(a => a.classList.add('hide'));
-        }
-
-        function levelUp() {
-            clearInterval(gameInterval);
-            document.getElementById('levelup').style.display = 'flex';
-            document.getElementById('next-btn').onclick = () => startGame(stage + 1);
+        function winStage() {
+            clearInterval(loop);
+            document.getElementById('ui-win').style.display = 'flex';
+            document.getElementById('next-lvl-trigger').onclick = () => loadStage(stage + 1);
         }
 
         function gameOver() {
-            clearInterval(gameInterval);
-            document.getElementById('gameover').style.display = 'flex';
-            if (snake.length - 1 > hiScore) {
-                hiScore = snake.length - 1;
-                hiScoreEl.innerText = hiScore.toString().padStart(3, '0');
-            }
+            if(isHell) return;
+            clearInterval(loop);
+            document.getElementById('ui-dead').style.display = 'flex';
+            if (snake.length - 1 > hiScore) { hiScore = snake.length - 1; sHi.innerText = hiScore.toString().padStart(3, '0'); }
         }
 
-        function spawnFood() {
-            food = {
-                x: Math.floor(Math.random() * GRID_SIZE),
-                y: Math.floor(Math.random() * GRID_SIZE)
-            };
-        }
+        function spawnFood() { food = { x: Math.floor(Math.random()*SIZE), y: Math.floor(Math.random()*SIZE) }; }
 
-        function draw() {
-            boardEl.innerHTML = '';
-            snake.forEach((s, i) => {
-                const part = document.createElement('div');
-                part.className = 'snake' + (isHell ? ' hell-part' : '');
-                part.style.gridColumnStart = s.x + 1;
-                part.style.gridRowStart = s.y + 1;
-                if(isHell) part.style.opacity = 1 - (i * 0.03);
-                boardEl.appendChild(part);
+        function render() {
+            grid.innerHTML = '';
+            snake.forEach((p, i) => {
+                const div = document.createElement('div');
+                div.className = isHell ? 'hell-snake-part' : 'snake';
+                div.style.gridColumnStart = p.x + 1; div.style.gridRowStart = p.y + 1;
+                if(isHell) div.style.opacity = 1 - (i*0.04);
+                grid.appendChild(div);
             });
-
             const f = document.createElement('div');
-            f.className = 'food';
-            if(isHell) f.style.background = '#ff0000';
-            f.style.gridColumnStart = food.x + 1;
-            f.style.gridRowStart = food.y + 1;
-            boardEl.appendChild(f);
+            f.className = 'food'; if(isHell) f.style.background = '#f00';
+            f.style.gridColumnStart = food.x + 1; f.style.gridRowStart = food.y + 1;
+            grid.appendChild(f);
         }
 
-        function updateScore() {
-            scoreEl.innerText = (snake.length - 1).toString().padStart(3, '0');
-        }
+        function updateUI() { sCur.innerText = (snake.length - 1).toString().padStart(3, '0'); }
 
-        function changeDir(dir) {
-            if (isHell && Math.random() > 0.85) return;
-            switch(dir) {
-                case 'up': if(direction.y === 0) nextDir = {x: 0, y: -1}; break;
-                case 'down': if(direction.y === 0) nextDir = {x: 0, y: 1}; break;
-                case 'left': if(direction.x === 0) nextDir = {x: -1, y: 0}; break;
-                case 'right': if(direction.x === 0) nextDir = {x: 1, y: 0}; break;
-            }
+        function setNxtDir(x, y) {
+            if(isHell && Math.random() > 0.85) return;
+            if(x === -dir.x && x !== 0) return;
+            if(y === -dir.y && y !== 0) return;
+            nxtDir = {x, y};
         }
 
         window.addEventListener('keydown', e => {
-            if(e.key === 'ArrowUp') changeDir('up');
-            if(e.key === 'ArrowDown') changeDir('down');
-            if(e.key === 'ArrowLeft') changeDir('left');
-            if(e.key === 'ArrowRight') changeDir('right');
+            if(e.key === 'ArrowUp') setNxtDir(0, -1); if(e.key === 'ArrowDown') setNxtDir(0, 1);
+            if(e.key === 'ArrowLeft') setNxtDir(-1, 0); if(e.key === 'ArrowRight') setNxtDir(1, 0);
         });
     </script>
 </body>
